@@ -1,0 +1,737 @@
+{
+  "jsonrpc": "2.0",
+  "id": -1,
+  "result": {
+    "genesis": {
+      "genesis_time": "2025-08-01T11:50:55.193154499Z",
+      "chain_id": "paxi-mainnet",
+      "initial_height": "1",
+      "consensus_params": {
+        "block": {
+          "max_bytes": "5242880",
+          "max_gas": "4000000000"
+        },
+        "evidence": {
+          "max_age_num_blocks": "100000",
+          "max_age_duration": "172800000000000",
+          "max_bytes": "1048576"
+        },
+        "validator": {
+          "pub_key_types": [
+            "ed25519"
+          ]
+        },
+        "version": {
+          "app": "0"
+        },
+        "abci": {
+          "vote_extensions_enable_height": "0"
+        }
+      },
+      "app_hash": "",
+      "app_state": {
+        "07-tendermint": null,
+        "auth": {
+          "params": {
+            "max_memo_characters": "256",
+            "tx_sig_limit": "7",
+            "tx_size_cost_per_byte": "10",
+            "sig_verify_cost_ed25519": "590",
+            "sig_verify_cost_secp256k1": "1000"
+          },
+          "accounts": [
+            {
+              "@type": "/cosmos.vesting.v1beta1.PeriodicVestingAccount",
+              "base_vesting_account": {
+                "base_account": {
+                  "address": "paxi1hv7txq4kmc9spkk3nrq0xnhj0jkhk4ye53f50h",
+                  "pub_key": null,
+                  "account_number": "0",
+                  "sequence": "0"
+                },
+                "original_vesting": [
+                  {
+                    "denom": "upaxi",
+                    "amount": "14000000000000"
+                  }
+                ],
+                "delegated_free": [],
+                "delegated_vesting": [],
+                "end_time": "1816257055"
+              },
+              "start_time": "1754049055",
+              "vesting_periods": [
+                {
+                  "length": "0",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "2000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "2000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "2000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "2000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "2000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "2000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "2000000000000"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "@type": "/cosmos.vesting.v1beta1.PeriodicVestingAccount",
+              "base_vesting_account": {
+                "base_account": {
+                  "address": "paxi1drxrxujqf78zeej3nthgeegt7apax2j48wauqy",
+                  "pub_key": null,
+                  "account_number": "1",
+                  "sequence": "0"
+                },
+                "original_vesting": [
+                  {
+                    "denom": "upaxi",
+                    "amount": "10000000000000"
+                  }
+                ],
+                "delegated_free": [],
+                "delegated_vesting": [],
+                "end_time": "1816257055"
+              },
+              "start_time": "1754049055",
+              "vesting_periods": [
+                {
+                  "length": "0",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "4000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "1000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "1000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "1000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "1000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "1000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "1000000000000"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "@type": "/cosmos.vesting.v1beta1.PeriodicVestingAccount",
+              "base_vesting_account": {
+                "base_account": {
+                  "address": "paxi1yp4yc662nhvm9kx7nwexw4t97rlsm9q0kppvr5",
+                  "pub_key": null,
+                  "account_number": "2",
+                  "sequence": "0"
+                },
+                "original_vesting": [
+                  {
+                    "denom": "upaxi",
+                    "amount": "15000000000000"
+                  }
+                ],
+                "delegated_free": [],
+                "delegated_vesting": [],
+                "end_time": "1816257055"
+              },
+              "start_time": "1754049055",
+              "vesting_periods": [
+                {
+                  "length": "0",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "3000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "2000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "2000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "2000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "2000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "2000000000000"
+                    }
+                  ]
+                },
+                {
+                  "length": "10368000",
+                  "amount": [
+                    {
+                      "denom": "upaxi",
+                      "amount": "2000000000000"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "@type": "/cosmos.auth.v1beta1.ModuleAccount",
+              "base_account": {
+                "address": "paxi1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8yrqnn0",
+                "pub_key": null,
+                "account_number": "3",
+                "sequence": "0"
+              },
+              "name": "distribution",
+              "permissions": []
+            },
+            {
+              "@type": "/cosmos.auth.v1beta1.BaseAccount",
+              "address": "paxi1rnwv6u92cc0v55ed8vk7zy3cjd32j5qq4487wg",
+              "pub_key": null,
+              "account_number": "4",
+              "sequence": "0"
+            },
+            {
+              "@type": "/cosmos.auth.v1beta1.BaseAccount",
+              "address": "paxi1ag0jvu2uswq2355m573a9exx2ew29gfnuxh5px",
+              "pub_key": null,
+              "account_number": "5",
+              "sequence": "0"
+            },
+            {
+              "@type": "/cosmos.auth.v1beta1.ModuleAccount",
+              "base_account": {
+                "address": "paxi1sumuh0xy9nghw0mvfm8f3hpf42f8rzwnl7gnar",
+                "pub_key": null,
+                "account_number": "6",
+                "sequence": "0"
+              },
+              "name": "burn_token_account",
+              "permissions": [
+                "burner"
+              ]
+            },
+            {
+              "@type": "/cosmos.auth.v1beta1.ModuleAccount",
+              "base_account": {
+                "address": "paxi1mfru9azs5nua2wxcd4sq64g5nt7nn4n80r745t",
+                "pub_key": null,
+                "account_number": "7",
+                "sequence": "0"
+              },
+              "name": "swap",
+              "permissions": [
+                "burner",
+                "minter"
+              ]
+            },
+            {
+              "@type": "/cosmos.auth.v1beta1.BaseAccount",
+              "address": "paxi1235a38xe2sapaxzauv6ypzjum3e3fjqajwqr09",
+              "pub_key": null,
+              "account_number": "8",
+              "sequence": "0"
+            }
+          ]
+        },
+        "bank": {
+          "params": {
+            "send_enabled": [],
+            "default_send_enabled": true
+          },
+          "balances": [
+            {
+              "address": "paxi1rnwv6u92cc0v55ed8vk7zy3cjd32j5qq4487wg",
+              "coins": [
+                {
+                  "denom": "upaxi",
+                  "amount": "45000000000000"
+                }
+              ]
+            },
+            {
+              "address": "paxi1yp4yc662nhvm9kx7nwexw4t97rlsm9q0kppvr5",
+              "coins": [
+                {
+                  "denom": "upaxi",
+                  "amount": "15000000000000"
+                }
+              ]
+            },
+            {
+              "address": "paxi1235a38xe2sapaxzauv6ypzjum3e3fjqajwqr09",
+              "coins": [
+                {
+                  "denom": "upaxi",
+                  "amount": "1000000000000"
+                }
+              ]
+            },
+            {
+              "address": "paxi1drxrxujqf78zeej3nthgeegt7apax2j48wauqy",
+              "coins": [
+                {
+                  "denom": "upaxi",
+                  "amount": "10000000000000"
+                }
+              ]
+            },
+            {
+              "address": "paxi1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8yrqnn0",
+              "coins": [
+                {
+                  "denom": "upaxi",
+                  "amount": "5000000000000"
+                }
+              ]
+            },
+            {
+              "address": "paxi1hv7txq4kmc9spkk3nrq0xnhj0jkhk4ye53f50h",
+              "coins": [
+                {
+                  "denom": "upaxi",
+                  "amount": "14000000000000"
+                }
+              ]
+            },
+            {
+              "address": "paxi1mfru9azs5nua2wxcd4sq64g5nt7nn4n80r745t",
+              "coins": []
+            },
+            {
+              "address": "paxi1ag0jvu2uswq2355m573a9exx2ew29gfnuxh5px",
+              "coins": [
+                {
+                  "denom": "upaxi",
+                  "amount": "10000000000000"
+                }
+              ]
+            }
+          ],
+          "supply": [
+            {
+              "denom": "upaxi",
+              "amount": "100000000000000"
+            }
+          ],
+          "denom_metadata": [
+            {
+              "description": "The native token of the Paxi network.",
+              "denom_units": [
+                {
+                  "denom": "upaxi",
+                  "exponent": 0,
+                  "aliases": []
+                },
+                {
+                  "denom": "paxi",
+                  "exponent": 6,
+                  "aliases": [
+                    "PAXI"
+                  ]
+                }
+              ],
+              "base": "upaxi",
+              "display": "paxi",
+              "name": "Paxi",
+              "symbol": "PAXI",
+              "uri": "",
+              "uri_hash": ""
+            }
+          ],
+          "send_enabled": []
+        },
+        "circuit": {
+          "account_permissions": [],
+          "disabled_type_urls": []
+        },
+        "consensus": null,
+        "custommint": {
+          "params": {
+            "burn_threshold": "100000",
+            "burn_ratio": "0.500000000000000000",
+            "blocks_per_year": 7884000,
+            "first_year_inflation": "0.080000000000000000",
+            "second_year_inflation": "0.040000000000000000",
+            "other_year_inflation": "0.020000000000000000"
+          }
+        },
+        "customwasm": {
+          "params": {
+            "store_code_base_gas": 400000000,
+            "store_code_multiplier": 300,
+            "inst_base_gas": 20000000,
+            "inst_multiplier": 100
+          }
+        },
+        "distribution": {
+          "params": {
+            "community_tax": "0.050000000000000000",
+            "base_proposer_reward": "0.000000000000000000",
+            "bonus_proposer_reward": "0.000000000000000000",
+            "withdraw_addr_enabled": true
+          },
+          "fee_pool": {
+            "community_pool": [
+              {
+                "denom": "upaxi",
+                "amount": "5000000000000.000000000000000000"
+              }
+            ]
+          },
+          "delegator_withdraw_infos": [],
+          "previous_proposer": "",
+          "outstanding_rewards": [],
+          "validator_accumulated_commissions": [],
+          "validator_historical_rewards": [],
+          "validator_current_rewards": [],
+          "delegator_starting_infos": [],
+          "validator_slash_events": []
+        },
+        "evidence": {
+          "evidence": []
+        },
+        "genutil": {
+          "gen_txs": [
+            {
+              "body": {
+                "messages": [
+                  {
+                    "@type": "/cosmos.staking.v1beta1.MsgCreateValidator",
+                    "description": {
+                      "moniker": "Azure Dragon",
+                      "identity": "",
+                      "website": "https://paxinet.op",
+                      "security_contact": "support@paxinet.io",
+                      "details": "The First Node on Paxi"
+                    },
+                    "commission": {
+                      "rate": "0.250000000000000000",
+                      "max_rate": "0.500000000000000000",
+                      "max_change_rate": "0.010000000000000000"
+                    },
+                    "min_self_delegation": "1",
+                    "delegator_address": "",
+                    "validator_address": "paxivaloper1235a38xe2sapaxzauv6ypzjum3e3fjqajq2dgp",
+                    "pubkey": {
+                      "@type": "/cosmos.crypto.ed25519.PubKey",
+                      "key": "Y0o7AoH+pB6opjgqE1Ne39cSnE3KzPS1J4IkosvZ1/Q="
+                    },
+                    "value": {
+                      "denom": "upaxi",
+                      "amount": "900000000000"
+                    }
+                  }
+                ],
+                "memo": "25aa07b1073c49e298cabe00fcc5ccb0904fb840@51.79.176.58:26656",
+                "timeout_height": "0",
+                "unordered": false,
+                "timeout_timestamp": null,
+                "extension_options": [],
+                "non_critical_extension_options": []
+              },
+              "auth_info": {
+                "signer_infos": [
+                  {
+                    "public_key": {
+                      "@type": "/cosmos.crypto.secp256k1.PubKey",
+                      "key": "AhS74dUolMAY2rvSBP10+/qJcb+A0JpIrhKCC+2tH01z"
+                    },
+                    "mode_info": {
+                      "single": {
+                        "mode": "SIGN_MODE_DIRECT"
+                      }
+                    },
+                    "sequence": "0"
+                  }
+                ],
+                "fee": {
+                  "amount": [],
+                  "gas_limit": "200000",
+                  "payer": "",
+                  "granter": ""
+                },
+                "tip": null
+              },
+              "signatures": [
+                "wDRyzDUXJSaogxg6eykagtJQLNrVbzNKtX9ffgvA/aIXSYLGVNcI1YQzfczVgIOCRKhbikdhmTldMxM5+hX4Ug=="
+              ]
+            }
+          ]
+        },
+        "gov": {
+          "starting_proposal_id": "1",
+          "deposits": [],
+          "votes": [],
+          "proposals": [],
+          "deposit_params": null,
+          "voting_params": null,
+          "tally_params": null,
+          "params": {
+            "min_deposit": [
+              {
+                "denom": "upaxi",
+                "amount": "30000000"
+              }
+            ],
+            "max_deposit_period": "172800s",
+            "voting_period": "172800s",
+            "quorum": "0.334000000000000000",
+            "threshold": "0.500000000000000000",
+            "veto_threshold": "0.334000000000000000",
+            "min_initial_deposit_ratio": "0.000000000000000000",
+            "proposal_cancel_ratio": "0.500000000000000000",
+            "proposal_cancel_dest": "",
+            "expedited_voting_period": "43200s",
+            "expedited_threshold": "0.667000000000000000",
+            "expedited_min_deposit": [
+              {
+                "denom": "upaxi",
+                "amount": "150000000"
+              }
+            ],
+            "burn_vote_quorum": false,
+            "burn_proposal_deposit_prevote": false,
+            "burn_vote_veto": true,
+            "min_deposit_ratio": "0.010000000000000000"
+          },
+          "constitution": ""
+        },
+        "ibc": {
+          "client_genesis": {
+            "clients": [],
+            "clients_consensus": [],
+            "clients_metadata": [],
+            "params": {
+              "allowed_clients": [
+                "07-tendermint"
+              ]
+            },
+            "create_localhost": false,
+            "next_client_sequence": "0"
+          },
+          "connection_genesis": {
+            "connections": [],
+            "client_connection_paths": [],
+            "next_connection_sequence": "0",
+            "params": {
+              "max_expected_time_per_block": "30000000000"
+            }
+          },
+          "channel_genesis": {
+            "channels": [],
+            "acknowledgements": [],
+            "commitments": [],
+            "receipts": [],
+            "send_sequences": [],
+            "recv_sequences": [],
+            "ack_sequences": [],
+            "next_channel_sequence": "0"
+          },
+          "client_v2_genesis": {
+            "counterparty_infos": []
+          },
+          "channel_v2_genesis": {
+            "acknowledgements": [],
+            "commitments": [],
+            "receipts": [],
+            "async_packets": [],
+            "send_sequences": []
+          }
+        },
+        "paxi": {
+          "params": {
+            "extra_gas_per_new_account": 500000
+          }
+        },
+        "slashing": {
+          "params": {
+            "signed_blocks_window": "100",
+            "min_signed_per_window": "0.100000000000000000",
+            "downtime_jail_duration": "600s",
+            "slash_fraction_double_sign": "0.100000000000000000",
+            "slash_fraction_downtime": "0.010000000000000000"
+          },
+          "signing_infos": [],
+          "missed_blocks": []
+        },
+        "staking": {
+          "params": {
+            "unbonding_time": "604800s",
+            "max_validators": 100,
+            "max_entries": 7,
+            "historical_entries": 10000,
+            "bond_denom": "upaxi",
+            "min_commission_rate": "0.000000000000000000"
+          },
+          "last_total_power": "0",
+          "last_validator_powers": [],
+          "validators": [],
+          "delegations": [],
+          "unbonding_delegations": [],
+          "redelegations": [],
+          "exported": false
+        },
+        "swap": {
+          "params": {
+            "code_id": 1,
+            "swap_fee_bps": 4,
+            "min_liquidity": 1000000
+          }
+        },
+        "transfer": {
+          "port_id": "transfer",
+          "denoms": [],
+          "params": {
+            "send_enabled": true,
+            "receive_enabled": true
+          },
+          "total_escrowed": []
+        },
+        "upgrade": {
+
+        },
+        "vesting": {
+
+        },
+        "wasm": {
+          "params": {
+            "code_upload_access": {
+              "permission": "Everybody",
+              "addresses": []
+            },
+            "instantiate_default_permission": "Everybody"
+          },
+          "codes": [],
+          "contracts": [],
+          "sequences": []
+        }
+      }
+    }
+  }
+}

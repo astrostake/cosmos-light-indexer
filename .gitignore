@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Database (SQLite & WAL)
+data/
+*.db
+*.sqlite
+*.sqlite3
+*-wal
+*-shm
+
+# Configuration & Secrets
+config.yaml
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS & Editor System Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
