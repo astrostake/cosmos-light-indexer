@@ -7,6 +7,7 @@ Unlike full-node indexers (like Juno or BDJuno) that require PostgreSQL and heav
 ## 🚀 Features
 
 * **Validator Lifecycle Tracking:** Records initial creation and every subsequent change (Moniker, Website, Commission changes) with "Before vs After" diffs.
+* **Growth Tracking:** Captures daily snapshots (at 23:55 UTC) of delegator counts and voting power for historical charting.
 * **Genesis Import:** Automatically parses `genesis.json` to populate initial validator data (GenTXs & State).
 * **Incident History:** Tracks `MsgUnjail` events to build a history of slashing/downtime incidents.
 * **Governance Activity:** Records voting history per validator (`YES`, `NO`, `ABSTAIN`, `NWV`) and tally summaries.
@@ -93,6 +94,7 @@ Base URL: `http://localhost:3002`
 | :--- | :--- | :--- |
 | `GET` | `/:chain/validators` | List all validators with current stats. |
 | `GET` | `/:chain/validators/:addr` | Get detailed profile, history of edits, unjails, and votes. |
+| `GET` | `/:chain/validators/:addr/delegations-history` | Get daily stats for charts. Supports `?range=7/30/90/all`. |
 | `GET` | `/:chain/proposals/:id/votes` | Get vote summary and individual validator votes for a proposal. |
 | `GET` | `/:chain/upgrade` | Get active software upgrade plan and estimated ETA. |
 | `GET` | `/:chain/stats` | Get global indexing stats. |
