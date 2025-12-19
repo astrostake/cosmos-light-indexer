@@ -15,10 +15,21 @@ import { syncValidatorState } from './src/processors/validatorState.js';
 import { processCreateValidator } from './src/processors/createValidator.js';
 import { processGenesisFile } from './src/processors/genesis.js';
 import { syncUpgradePlan } from './src/processors/upgrade.js';
+import { processDailySnapshot } from './src/processors/dailySnapshot.js';
 
 // Configuration
 if (!fs.existsSync('./config.yaml')) throw new Error("Config missing!");
 const config = yaml.load(fs.readFileSync('./config.yaml', 'utf8'));
+
+// Ensure data directory exists
+if (!fs.existsSync('./data')) fs.mkdirSync('./data');
+
+// Initialize Database Connections
+const dbs = {};
+config.chains.forEach(chain => {
+  dbs[chain.name] = initDB(chain.db_file);
+  console.log(`[Init] Database loaded for ${chain.name}`);
+});
 
 // Constants
 const VOTE_MSG_TYPES = [
@@ -42,18 +53,15 @@ const syncLatestHeight = async (db, chainConfig) => {
 
     return latestHeight;
   } catch (e) {
-    console.error(`  [Height Tracker] Failed to fetch latest block: ${e.message}`);
     return null;
   }
 };
 
 async function main() {
-  if (!fs.existsSync('./data')) fs.mkdirSync('./data');
-
   // --- Initialization Phase ---
   console.log(`\n>>> INITIALIZING GENESIS DATA <<<`);
   for (const chain of config.chains) {
-    const db = initDB(chain.db_file);
+    const db = dbs[chain.name];
     processGenesisFile(db, chain);
   }
   console.log(`>>> INITIALIZATION COMPLETE <<<\n`);
@@ -63,9 +71,9 @@ async function main() {
     console.log(`\n[${new Date().toISOString()}] Starting Sync Cycle...`);
 
     for (const chain of config.chains) {
-      console.log(`\n>>> CHECKING CHAIN: ${chain.name.toUpperCase()} <<<`);
+      console.log(`\n>>> PROCESSING CHAIN: ${chain.name.toUpperCase()} <<<`);
       
-      const db = initDB(chain.db_file);
+      const db = dbs[chain.name];
 
       try {
         // Core System Sync
@@ -73,7 +81,7 @@ async function main() {
         await syncValidatorState(db, chain);
         await syncUpgradePlan(db, chain);
 
-        // Historical Data Processing (Order matters: Create -> Edit -> Unjail -> Vote)
+        // Historical Data Processing
         
         // 1. Create Validator
         await fetchAndProcess(db, chain, '/cosmos.staking.v1beta1.MsgCreateValidator', async (txs) => {
@@ -96,6 +104,9 @@ async function main() {
             return processVote(db, txs, chain);
           });
         }
+
+        // 5. Daily Snapshot
+        await processDailySnapshot(db, chain);
 
       } catch (err) {
         console.error(`Error syncing ${chain.name}:`, err.message);

@@ -114,6 +114,41 @@ app.get('/:chain/validators/:address', (req, res) => {
   }
 });
 
+app.get('/:chain/validators/:addr/delegations-history', getDB, (req, res) => {
+  try {
+    const { addr } = req.params;
+    const { range } = req.query;
+
+    let sql = `
+      SELECT snapshot_date, delegator_count, total_staked 
+      FROM history_delegator_stats 
+      WHERE operator_address = ?
+    `;
+    const params = [addr];
+
+    // Handle Date Filtering
+    if (range && range !== 'all') {
+      const days = parseInt(range);
+      if (!isNaN(days) && days > 0) {
+        const d = new Date();
+        d.setDate(d.getDate() - days);
+        const cutoffDate = d.toISOString().split('T')[0]; // Format YYYY-MM-DD
+
+        sql += ` AND snapshot_date >= ?`;
+        params.push(cutoffDate);
+      }
+    }
+
+    // Sort by Date ASC (for Charts)
+    sql += ` ORDER BY snapshot_date ASC`;
+
+    const history = req.db.prepare(sql).all(...params);
+    res.json(history);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/:chain/proposals/:id/votes', (req, res) => {
   const db = getDB(req.params.chain);
   if (!db) return res.status(404).json({ error: "Chain database not found" });

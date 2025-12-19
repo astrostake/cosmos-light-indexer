@@ -52,6 +52,15 @@ export const initDB = (dbPath) => {
       info TEXT, 
       last_checked DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS history_delegator_stats (
+      operator_address TEXT,
+      snapshot_date TEXT,
+      delegator_count INTEGER,
+      total_staked TEXT,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (operator_address, snapshot_date)
+    );
   `);
 
   return db;
