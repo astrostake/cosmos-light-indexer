@@ -114,7 +114,10 @@ app.get('/:chain/validators/:address', (req, res) => {
   }
 });
 
-app.get('/:chain/validators/:addr/delegations-history', getDB, (req, res) => {
+app.get('/:chain/validators/:addr/delegations-history', (req, res) => {
+  const db = getDB(req.params.chain);
+  if (!db) return res.status(404).json({ error: "Chain database not found" });
+
   try {
     const { addr } = req.params;
     const { range } = req.query;
@@ -142,10 +145,12 @@ app.get('/:chain/validators/:addr/delegations-history', getDB, (req, res) => {
     // Sort by Date ASC (for Charts)
     sql += ` ORDER BY snapshot_date ASC`;
 
-    const history = req.db.prepare(sql).all(...params);
+    const history = db.prepare(sql).all(...params);
     res.json(history);
   } catch (e) {
     res.status(500).json({ error: e.message });
+  } finally {
+    db.close();
   }
 });
 
