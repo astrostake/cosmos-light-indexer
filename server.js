@@ -227,7 +227,7 @@ app.get('/:chain/upgrade', (req, res) => {
   if (!db) return res.status(404).json({ error: "DB not found" });
 
   try {
-    const upgrade = db.prepare('SELECT * FROM active_upgrade LIMIT 1').get();
+    const upgrade = db.prepare('SELECT * FROM active_upgrade ORDER BY target_height DESC LIMIT 1').get();
     const syncStatus = db.prepare('SELECT MAX(last_height) as h FROM sync_status').get();
     const currentHeight = syncStatus ? syncStatus.h : 0;
 
