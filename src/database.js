@@ -57,10 +57,11 @@ export const initDB = (dbPath) => {
       plan_name TEXT,
       target_height INTEGER,
       actual_upgrade_time INTEGER,
+      proposal_voting_start_time INTEGER,
       proposal_id TEXT,
       proposal_title TEXT,
       status TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      recorded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (plan_name, target_height)
     );
 

@@ -267,10 +267,11 @@ app.get('/:chain/upgrade/history', (req, res) => {
         plan_name,
         target_height,
         actual_upgrade_time,
+        proposal_voting_start_time,
         proposal_id,
         proposal_title,
         status,
-        created_at
+        recorded_at
       FROM history_upgrades
     `;
     
@@ -291,7 +292,10 @@ app.get('/:chain/upgrade/history', (req, res) => {
       actual_upgrade_date: u.actual_upgrade_time 
         ? new Date(u.actual_upgrade_time).toISOString() 
         : null,
-      created_at_formatted: new Date(u.created_at).toISOString()
+      proposal_voting_start_date: u.proposal_voting_start_time
+        ? new Date(u.proposal_voting_start_time).toISOString()
+        : null,
+      recorded_at_date: new Date(u.recorded_at).toISOString()
     }));
     
     res.json(formatted);
@@ -326,7 +330,10 @@ app.get('/:chain/upgrade/:planName', (req, res) => {
       actual_upgrade_date: upgrade.actual_upgrade_time 
         ? new Date(upgrade.actual_upgrade_time).toISOString() 
         : null,
-      created_at_formatted: new Date(upgrade.created_at).toISOString()
+      proposal_voting_start_date: upgrade.proposal_voting_start_time
+        ? new Date(upgrade.proposal_voting_start_time).toISOString()
+        : null,
+      recorded_at_date: new Date(upgrade.recorded_at).toISOString()
     });
     
   } catch (e) {

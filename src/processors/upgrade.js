@@ -39,8 +39,8 @@ export const syncUpgradePlan = async (db, chainConfig) => {
   
   const stmtInsertHistory = db.prepare(`
     INSERT OR REPLACE INTO history_upgrades
-    (plan_name, target_height, actual_upgrade_time, proposal_id, proposal_title, status)
-    VALUES (?, ?, ?, ?, ?, ?)
+    (plan_name, target_height, actual_upgrade_time, proposal_voting_start_time, proposal_id, proposal_title, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
 
   try {
@@ -139,6 +139,7 @@ export const syncUpgradePlan = async (db, chainConfig) => {
           proposal.plan.name,
           targetHeight,
           actualUpgradeTime,
+          proposal.votingStart, // Waktu voting proposal dimulai
           proposal.id,
           proposal.title,
           status
@@ -205,7 +206,7 @@ export const syncUpgradePlan = async (db, chainConfig) => {
     stmtUpsertActive.run(
       found.name,
       found.height,
-      found.startTime,
+      found.startTime, // Ini waktu voting dimulai
       estimatedTime,
       found.info
     );
