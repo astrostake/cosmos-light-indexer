@@ -82,10 +82,27 @@ export const syncUpgradePlan = async (db, chainConfig) => {
           let plan = null;
 
           if (p.messages) {
-            const msg = p.messages.find(m => {
+            // Format 1: Direct upgrade message
+            let msg = p.messages.find(m => {
               const t = m['@type'] || m.typeUrl || '';
               return t.includes('MsgSoftwareUpgrade') || t.includes('SoftwareUpgradeProposal');
             });
+            
+            // Format 2: Legacy content wrapper (LAVA & other chains)
+            if (!msg) {
+              const legacyMsg = p.messages.find(m => {
+                const t = m['@type'] || m.typeUrl || '';
+                return t.includes('MsgExecLegacyContent');
+              });
+              
+              if (legacyMsg && legacyMsg.content) {
+                const contentType = legacyMsg.content['@type'] || legacyMsg.content.typeUrl || '';
+                if (contentType.includes('SoftwareUpgradeProposal')) {
+                  msg = legacyMsg.content;
+                }
+              }
+            }
+            
             if (msg) plan = msg.plan || (msg.content ? msg.content.plan : null);
           } 
           else if (p.content && p.content.plan) {
@@ -96,7 +113,7 @@ export const syncUpgradePlan = async (db, chainConfig) => {
 
           return {
             id: p.id || p.proposal_id,
-            title: p.title || (p.content ? p.content.title : plan.name),
+            title: p.title || (p.content ? p.content.title : (p.messages?.[0]?.content?.title || plan.name)),
             status: p.status,
             votingStart: p.voting_start_time ? new Date(p.voting_start_time).getTime() : 0,
             plan
