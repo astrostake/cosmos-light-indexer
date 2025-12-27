@@ -235,8 +235,11 @@ app.get('/:chain/upgrade', (req, res) => {
       return res.json({ active: false });
     }
 
+    // Cek apakah block sekarang sudah melewati target upgrade
+    const isPassed = currentHeight >= upgrade.target_height;
+
     res.json({
-      active: true,
+      active: !isPassed,
       plan_name: upgrade.plan_name,
       target_height: upgrade.target_height,
       current_height: currentHeight,
@@ -245,6 +248,87 @@ app.get('/:chain/upgrade', (req, res) => {
       info: upgrade.info
     });
 
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  } finally {
+    db.close();
+  }
+});
+
+app.get('/:chain/upgrade/history', (req, res) => {
+  const db = getDB(req.params.chain);
+  if (!db) return res.status(404).json({ error: "DB not found" });
+
+  try {
+    const { status } = req.query; // Filter: 'completed', 'scheduled', atau 'all'
+    
+    let sql = `
+      SELECT 
+        plan_name,
+        target_height,
+        actual_upgrade_time,
+        proposal_id,
+        proposal_title,
+        status,
+        created_at
+      FROM history_upgrades
+    `;
+    
+    const params = [];
+    
+    if (status && status !== 'all') {
+      sql += ` WHERE status = ?`;
+      params.push(status);
+    }
+    
+    sql += ` ORDER BY target_height DESC`;
+    
+    const upgrades = db.prepare(sql).all(...params);
+    
+    // Format timestamps untuk readability
+    const formatted = upgrades.map(u => ({
+      ...u,
+      actual_upgrade_date: u.actual_upgrade_time 
+        ? new Date(u.actual_upgrade_time).toISOString() 
+        : null,
+      created_at_formatted: new Date(u.created_at).toISOString()
+    }));
+    
+    res.json(formatted);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  } finally {
+    db.close();
+  }
+});
+
+// NEW: Endpoint untuk mendapatkan detail upgrade tertentu
+app.get('/:chain/upgrade/:planName', (req, res) => {
+  const db = getDB(req.params.chain);
+  if (!db) return res.status(404).json({ error: "DB not found" });
+
+  try {
+    const { planName } = req.params;
+    
+    const upgrade = db.prepare(`
+      SELECT * FROM history_upgrades 
+      WHERE plan_name = ?
+      ORDER BY target_height DESC 
+      LIMIT 1
+    `).get(planName);
+    
+    if (!upgrade) {
+      return res.status(404).json({ error: "Upgrade not found" });
+    }
+    
+    res.json({
+      ...upgrade,
+      actual_upgrade_date: upgrade.actual_upgrade_time 
+        ? new Date(upgrade.actual_upgrade_time).toISOString() 
+        : null,
+      created_at_formatted: new Date(upgrade.created_at).toISOString()
+    });
+    
   } catch (e) {
     res.status(500).json({ error: e.message });
   } finally {

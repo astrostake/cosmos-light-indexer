@@ -53,6 +53,17 @@ export const initDB = (dbPath) => {
       last_checked DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS history_upgrades (
+      plan_name TEXT,
+      target_height INTEGER,
+      actual_upgrade_time INTEGER,
+      proposal_id TEXT,
+      proposal_title TEXT,
+      status TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (plan_name, target_height)
+    );
+
     CREATE TABLE IF NOT EXISTS history_delegator_stats (
       operator_address TEXT,
       snapshot_date TEXT,

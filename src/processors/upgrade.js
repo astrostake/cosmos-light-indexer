@@ -29,13 +29,19 @@ export const syncUpgradePlan = async (db, chainConfig) => {
     ]
   };
 
-  const stmtUpsert = db.prepare(`
+  const stmtUpsertActive = db.prepare(`
     INSERT OR REPLACE INTO active_upgrade 
     (plan_name, target_height, start_time, estimated_time, info, last_checked)
     VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
   `);
 
-  const stmtClear = db.prepare('DELETE FROM active_upgrade');
+  const stmtClearActive = db.prepare('DELETE FROM active_upgrade');
+  
+  const stmtInsertHistory = db.prepare(`
+    INSERT OR REPLACE INTO history_upgrades
+    (plan_name, target_height, actual_upgrade_time, proposal_id, proposal_title, status)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
 
   try {
     // 1. Get Latest Block & Time
@@ -65,13 +71,13 @@ export const syncUpgradePlan = async (db, chainConfig) => {
       // Keep avgBlockTime null if sampling fails
     }
 
-    // 3. Find Active Upgrade (Strategy A: Governance Proposals)
-    let found = null;
+    // 3. Find All Upgrade Proposals (for historical tracking)
+    let allUpgradeProposals = [];
     try {
       const resProps = await fetchSmart(baseUrl, PATHS.proposals, 10000);
       const proposals = resProps.data.proposals || [];
 
-      const upgradeProposals = proposals
+      allUpgradeProposals = proposals
         .map(p => {
           let plan = null;
 
@@ -91,6 +97,7 @@ export const syncUpgradePlan = async (db, chainConfig) => {
           return {
             id: p.id || p.proposal_id,
             title: p.title || (p.content ? p.content.title : plan.name),
+            status: p.status,
             votingStart: p.voting_start_time ? new Date(p.voting_start_time).getTime() : 0,
             plan
           };
@@ -98,50 +105,104 @@ export const syncUpgradePlan = async (db, chainConfig) => {
         .filter(Boolean)
         .sort((a, b) => b.votingStart - a.votingStart);
 
-      if (upgradeProposals.length > 0) {
-        const latest = upgradeProposals[0];
-        found = {
-          name: latest.plan.name,
-          height: parseInt(latest.plan.height),
-          startTime: latest.votingStart,
-          info: `${latest.id}. ${latest.title}`
-        };
-      }
-    } catch {}
+      // 4. Save Historical Upgrades
+      for (const proposal of allUpgradeProposals) {
+        const targetHeight = parseInt(proposal.plan.height);
+        const isPassed = currentHeight >= targetHeight;
+        
+        let actualUpgradeTime = null;
+        let status = 'scheduled';
 
-    // 4. Find Active Upgrade (Strategy B: Current Plan Endpoint)
+        if (isPassed) {
+          // Coba fetch block pada target height untuk mendapatkan waktu sebenarnya
+          try {
+            const blockPath = resLatest.config.url
+              .replace(baseUrl, '')
+              .replace('latest', targetHeight);
+            
+            const resTargetBlock = await axios.get(`${baseUrl}${blockPath}`, { timeout: 5000 });
+            actualUpgradeTime = new Date(resTargetBlock.data.block.header.time).getTime();
+            status = 'completed';
+          } catch {
+            // Jika gagal fetch block, estimasi waktu berdasarkan rata-rata block time
+            if (avgBlockTime) {
+              const blocksPassed = targetHeight - currentHeight;
+              actualUpgradeTime = currentTime - (Math.abs(blocksPassed) * avgBlockTime * 1000);
+            }
+            status = 'completed';
+          }
+        } else {
+          status = 'scheduled';
+        }
+
+        stmtInsertHistory.run(
+          proposal.plan.name,
+          targetHeight,
+          actualUpgradeTime,
+          proposal.id,
+          proposal.title,
+          status
+        );
+      }
+
+    } catch (e) {
+      console.error(`Error fetching upgrade proposals: ${e.message}`);
+    }
+
+    // 5. Find Active Upgrade (untuk active_upgrade table)
+    let found = null;
+    
+    // Cari upgrade yang belum berlalu
+    const futureUpgrades = allUpgradeProposals.filter(p => {
+      return parseInt(p.plan.height) > currentHeight;
+    });
+
+    if (futureUpgrades.length > 0) {
+      const latest = futureUpgrades[0];
+      found = {
+        name: latest.plan.name,
+        height: parseInt(latest.plan.height),
+        startTime: latest.votingStart,
+        info: `${latest.id}. ${latest.title}`
+      };
+    }
+
+    // 6. Fallback: Check Current Plan Endpoint
     if (!found) {
       try {
         const resPlan = await fetchSmart(baseUrl, PATHS.plans, 5000);
         if (resPlan.data.plan) {
           const plan = resPlan.data.plan;
-          found = {
-            name: plan.name,
-            height: parseInt(plan.height),
-            startTime: currentTime, 
-            info: `Scheduled Upgrade: ${plan.name}`
-          };
+          const targetHeight = parseInt(plan.height);
+          
+          if (targetHeight > currentHeight) {
+            found = {
+              name: plan.name,
+              height: targetHeight,
+              startTime: currentTime, 
+              info: `Scheduled Upgrade: ${plan.name}`
+            };
+          }
         }
       } catch {}
     }
 
     if (!found) {
-      stmtClear.run();
+      stmtClearActive.run();
       return;
     }
 
-    // 5. Calculate ETA & Save
+    // 7. Calculate ETA & Save Active Upgrade
     const blocksRemaining = found.height - currentHeight;
     let estimatedTime;
 
     if (avgBlockTime !== null) {
       estimatedTime = currentTime + (Math.max(0, blocksRemaining) * avgBlockTime * 1000);
     } else {
-      // Fallback: assume 1s/block to prevent null
       estimatedTime = currentTime + (Math.max(0, blocksRemaining) * 1000);
     }
 
-    stmtUpsert.run(
+    stmtUpsertActive.run(
       found.name,
       found.height,
       found.startTime,
@@ -149,5 +210,7 @@ export const syncUpgradePlan = async (db, chainConfig) => {
       found.info
     );
 
-  } catch {}
+  } catch (e) {
+    console.error(`Error in syncUpgradePlan: ${e.message}`);
+  }
 };
