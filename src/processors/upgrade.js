@@ -22,10 +22,6 @@ export const syncUpgradePlan = async (db, chainConfig) => {
     plans: [
       '/cosmos/upgrade/v1beta1/current_plan',
       '/cosmos/upgrade/v1/current_plan'
-    ],
-    proposals: [
-      '/cosmos/gov/v1/proposals?pagination.limit=50&pagination.reverse=true',
-      '/cosmos/gov/v1beta1/proposals?pagination.limit=50&pagination.reverse=true'
     ]
   };
 
@@ -71,106 +67,147 @@ export const syncUpgradePlan = async (db, chainConfig) => {
       // Keep avgBlockTime null if sampling fails
     }
 
-    // 3. Find All Upgrade Proposals (for historical tracking)
-    let allUpgradeProposals = [];
-    try {
-      const resProps = await fetchSmart(baseUrl, PATHS.proposals, 10000);
-      const proposals = resProps.data.proposals || [];
-
-      allUpgradeProposals = proposals
-        .map(p => {
-          let plan = null;
-
-          if (p.messages) {
-            // Format 1: Direct upgrade message
-            let msg = p.messages.find(m => {
-              const t = m['@type'] || m.typeUrl || '';
-              return t.includes('MsgSoftwareUpgrade') || t.includes('SoftwareUpgradeProposal');
-            });
-            
-            // Format 2: Legacy content wrapper (LAVA & other chains)
-            if (!msg) {
-              const legacyMsg = p.messages.find(m => {
-                const t = m['@type'] || m.typeUrl || '';
-                return t.includes('MsgExecLegacyContent');
-              });
-              
-              if (legacyMsg && legacyMsg.content) {
-                const contentType = legacyMsg.content['@type'] || legacyMsg.content.typeUrl || '';
-                if (contentType.includes('SoftwareUpgradeProposal')) {
-                  msg = legacyMsg.content;
-                }
-              }
-            }
-            
-            if (msg) plan = msg.plan || (msg.content ? msg.content.plan : null);
-          } 
-          else if (p.content && p.content.plan) {
-            plan = p.content.plan;
+    // 3. Fetch ALL Proposals with Pagination
+    let allProposals = [];
+    let nextKey = null;
+    let pageCount = 0;
+    const maxPages = 50; // Safety limit (5000 proposals max)
+    
+    const versionPaths = [
+      '/cosmos/gov/v1/proposals',
+      '/cosmos/gov/v1beta1/proposals'
+    ];
+    
+    for (const basePath of versionPaths) {
+      try {
+        do {
+          pageCount++;
+          let url = `${baseUrl}${basePath}?pagination.limit=100&pagination.reverse=true`;
+          
+          if (nextKey) {
+            url += `&pagination.key=${encodeURIComponent(nextKey)}`;
           }
 
-          if (!plan) return null;
-
-          return {
-            id: p.id || p.proposal_id,
-            title: p.title || (p.content ? p.content.title : (p.messages?.[0]?.content?.title || plan.name)),
-            status: p.status,
-            votingStart: p.voting_start_time ? new Date(p.voting_start_time).getTime() : 0,
-            plan
-          };
-        })
-        .filter(Boolean)
-        .sort((a, b) => b.votingStart - a.votingStart);
-
-      // 4. Save Historical Upgrades
-      for (const proposal of allUpgradeProposals) {
-        const targetHeight = parseInt(proposal.plan.height);
-        const isPassed = currentHeight >= targetHeight;
-        
-        let actualUpgradeTime = null;
-        let status = 'scheduled';
-
-        if (isPassed) {
-          // Coba fetch block pada target height untuk mendapatkan waktu sebenarnya
-          try {
-            const blockPath = resLatest.config.url
-              .replace(baseUrl, '')
-              .replace('latest', targetHeight);
-            
-            const resTargetBlock = await axios.get(`${baseUrl}${blockPath}`, { timeout: 5000 });
-            actualUpgradeTime = new Date(resTargetBlock.data.block.header.time).getTime();
-            status = 'completed';
-          } catch {
-            // Jika gagal fetch block, estimasi waktu berdasarkan rata-rata block time
-            if (avgBlockTime) {
-              const blocksPassed = targetHeight - currentHeight;
-              actualUpgradeTime = currentTime - (Math.abs(blocksPassed) * avgBlockTime * 1000);
-            }
-            status = 'completed';
+          const res = await axios.get(url, { timeout: 10000 });
+          const proposals = res.data.proposals || [];
+          
+          allProposals.push(...proposals);
+          
+          nextKey = res.data.pagination?.next_key;
+          
+          // Break if no more pages or hit safety limit
+          if (!nextKey || nextKey === '' || pageCount >= maxPages) {
+            break;
           }
-        } else {
-          status = 'scheduled';
+
+          // Rate limiting between pages
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+        } while (nextKey && pageCount < maxPages);
+
+        break; // Success, exit version loop
+
+      } catch (e) {
+        if (basePath === versionPaths[versionPaths.length - 1]) {
+          // Both versions failed
+          console.error(`Failed to fetch proposals: ${e.message}`);
+          allProposals = [];
         }
-
-        stmtInsertHistory.run(
-          proposal.plan.name,
-          targetHeight,
-          actualUpgradeTime,
-          proposal.votingStart, // Waktu voting proposal dimulai
-          proposal.id,
-          proposal.title,
-          status
-        );
+        continue;
       }
-
-    } catch (e) {
-      console.error(`Error fetching upgrade proposals: ${e.message}`);
     }
 
-    // 5. Find Active Upgrade (untuk active_upgrade table)
+    // 4. Extract Upgrade Proposals (Support Multiple Formats)
+    const allUpgradeProposals = allProposals
+      .map(p => {
+        let plan = null;
+
+        if (p.messages) {
+          // Format 1: Direct upgrade message
+          let msg = p.messages.find(m => {
+            const t = m['@type'] || m.typeUrl || '';
+            return t.includes('MsgSoftwareUpgrade') || t.includes('SoftwareUpgradeProposal');
+          });
+          
+          // Format 2: Legacy content wrapper (LAVA & other chains)
+          if (!msg) {
+            const legacyMsg = p.messages.find(m => {
+              const t = m['@type'] || m.typeUrl || '';
+              return t.includes('MsgExecLegacyContent');
+            });
+            
+            if (legacyMsg && legacyMsg.content) {
+              const contentType = legacyMsg.content['@type'] || legacyMsg.content.typeUrl || '';
+              if (contentType.includes('SoftwareUpgradeProposal')) {
+                msg = legacyMsg.content;
+              }
+            }
+          }
+          
+          if (msg) plan = msg.plan || (msg.content ? msg.content.plan : null);
+        } 
+        else if (p.content && p.content.plan) {
+          plan = p.content.plan;
+        }
+
+        if (!plan) return null;
+
+        return {
+          id: p.id || p.proposal_id,
+          title: p.title || (p.content ? p.content.title : (p.messages?.[0]?.content?.title || plan.name)),
+          status: p.status,
+          votingStart: p.voting_start_time ? new Date(p.voting_start_time).getTime() : 0,
+          plan
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.votingStart - a.votingStart);
+
+    // 5. Save Historical Upgrades
+    for (const proposal of allUpgradeProposals) {
+      const targetHeight = parseInt(proposal.plan.height);
+      const isPassed = currentHeight >= targetHeight;
+      
+      let actualUpgradeTime = null;
+      let status = 'scheduled';
+
+      if (isPassed) {
+        // Try to fetch actual block time
+        try {
+          const blockPath = resLatest.config.url
+            .replace(baseUrl, '')
+            .replace('latest', targetHeight);
+          
+          const resTargetBlock = await axios.get(`${baseUrl}${blockPath}`, { timeout: 5000 });
+          actualUpgradeTime = new Date(resTargetBlock.data.block.header.time).getTime();
+          status = 'completed';
+        } catch {
+          // Estimate based on average block time if fetch fails
+          if (avgBlockTime) {
+            const blocksPassed = currentHeight - targetHeight;
+            actualUpgradeTime = currentTime - (blocksPassed * avgBlockTime * 1000);
+          }
+          status = 'completed';
+        }
+      } else {
+        status = 'scheduled';
+      }
+
+      stmtInsertHistory.run(
+        proposal.plan.name,
+        targetHeight,
+        actualUpgradeTime,
+        proposal.votingStart,
+        proposal.id,
+        proposal.title,
+        status
+      );
+    }
+
+    // 6. Find Active Upgrade (for active_upgrade table)
     let found = null;
     
-    // Cari upgrade yang belum berlalu
+    // Find upgrades that haven't occurred yet
     const futureUpgrades = allUpgradeProposals.filter(p => {
       return parseInt(p.plan.height) > currentHeight;
     });
@@ -185,7 +222,7 @@ export const syncUpgradePlan = async (db, chainConfig) => {
       };
     }
 
-    // 6. Fallback: Check Current Plan Endpoint
+    // 7. Fallback: Check Current Plan Endpoint
     if (!found) {
       try {
         const resPlan = await fetchSmart(baseUrl, PATHS.plans, 5000);
@@ -210,7 +247,7 @@ export const syncUpgradePlan = async (db, chainConfig) => {
       return;
     }
 
-    // 7. Calculate ETA & Save Active Upgrade
+    // 8. Calculate ETA & Save Active Upgrade
     const blocksRemaining = found.height - currentHeight;
     let estimatedTime;
 
@@ -223,7 +260,7 @@ export const syncUpgradePlan = async (db, chainConfig) => {
     stmtUpsertActive.run(
       found.name,
       found.height,
-      found.startTime, // Ini waktu voting dimulai
+      found.startTime,
       estimatedTime,
       found.info
     );

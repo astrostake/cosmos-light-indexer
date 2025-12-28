@@ -1,6 +1,6 @@
 # Cosmos Light Indexer ⚛️
 
-A lightweight, robust, and multichain indexer designed specifically to track **Validator Reputation, Governance & History** on Cosmos SDK chains.
+A lightweight, robust, and multichain indexer designed specifically to track **Validator Reputation, Governance, History & Network Upgrades** on Cosmos SDK chains.
 
 Unlike full-node indexers (like Juno or BDJuno) that require PostgreSQL and heavy hardware, this tool uses **SQLite** and connects to public API/LCD endpoints to scrape and persist data. It is engineered to be resilient against public node rate limits and pagination issues.
 
@@ -11,7 +11,11 @@ Unlike full-node indexers (like Juno or BDJuno) that require PostgreSQL and heav
 * **Genesis Import:** Automatically parses `genesis.json` to populate initial validator data (GenTXs & State).
 * **Incident History:** Tracks `MsgUnjail` events to build a history of slashing/downtime incidents.
 * **Governance Activity:** Records voting history per validator (`YES`, `NO`, `ABSTAIN`, `NWV`) and tally summaries.
-* **Upgrade Detection:** Real-time monitoring of on-chain software upgrade plans and estimated time vs height.
+* **Upgrade Detection & History:** 
+    * Tracks **complete upgrade history** (past, present, and future upgrades)
+    * Records **actual upgrade execution time** when upgrades occur on-chain
+    * Monitors **active upgrade plans** with real-time countdown and ETA
+    * Supports **multiple proposal formats** (modern, legacy, v1beta1)
 * **Smart Sync:**
     * **Initial Snapshot:** Fetches current state from Staking API.
     * **Resilient Backfill:** Uses a **Sequential Block Crawler** to scrape historical data from block 0 to present, bypassing broken pagination on public nodes.
@@ -97,6 +101,8 @@ Base URL: `http://localhost:3002`
 | `GET` | `/:chain/validators/:addr/delegations-history` | Get daily stats for charts. Supports `?range=7/30/90/all`. |
 | `GET` | `/:chain/proposals/:id/votes` | Get vote summary and individual validator votes for a proposal. |
 | `GET` | `/:chain/upgrade` | Get active software upgrade plan and estimated ETA. |
+| `GET` | `/:chain/upgrades/history` | Get complete upgrade history. Supports `?status=completed/scheduled/all`. |
+| `GET` | `/:chain/upgrades/:planName` | Get specific upgrade details by plan name. |
 | `GET` | `/:chain/stats` | Get global indexing stats. |
 
 **Example:**
@@ -116,9 +122,26 @@ graph TD
 ## ⚠️ Notes on Public Nodes
 
 If you are using public endpoints:
-* **Initial Sync:** The indexer uses a **Sequential Block Crawler** mechanism to ensure no data is missed. This may take time depending on chain height.
-* **Rate Limits:** The script has built-in exponential backoff. If it stalls or prints "Rate Limited", it will resume automatically.
-* **Data Availability:** If a node prunes old transactions (returns 404 for old blocks), the indexer cannot retrieve that specific history. Use an Archive Node for best results.
+
+### Rate Limiting
+* The script has built-in exponential backoff with retry logic
+* If it stalls or prints "Rate Limited", it will resume automatically
+* Uses smart delays between requests (200ms default)
+
+### Initial Sync
+* The indexer uses a **Sequential Block Crawler** mechanism to ensure no data is missed
+* This may take time depending on chain height (expect 1-3 hours for chains with 1M+ blocks)
+* Progress is logged in real-time with checkpoints saved
+
+### Data Availability
+* If a node prunes old transactions (returns 404 for old blocks), the indexer cannot retrieve that specific history
+* Use an **Archive Node** for best results and complete historical data
+* Genesis file import helps populate initial validator data
+
+### Upgrade Detection
+* **Pagination Support:** Automatically handles chains with 100+ proposals
+* **Legacy Format Support:** Detects old proposal formats (MsgExecLegacyContent)
+* **Multi-Page Fetching:** No upgrade proposal is missed regardless of pagination
 
 ## 🤝 Contribution
 
