@@ -13,8 +13,8 @@ export const processDailySnapshot = async (db, chainConfig) => {
   const utcHour = now.getUTCHours();
   const utcMin = now.getUTCMinutes();
 
-  // Time Gate: Only run between 23:55 UTC and 23:59 UTC
-  if (utcHour < 23 || utcMin < 55) {
+  // Time Gate: Only run between 23:50 UTC and 23:59 UTC
+  if (utcHour < 23 || utcMin < 50) {
     return; 
   }
 
