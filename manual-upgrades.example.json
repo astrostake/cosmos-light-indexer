@@ -1,0 +1,129 @@
+{
+  "_comment": "Manual Upgrade Injection Example - Copy this file to manual-upgrades.json and modify as needed",
+  "_instructions": [
+    "1. Copy this file: cp manual-upgrades.example.json manual-upgrades.json",
+    "2. Edit manual-upgrades.json with your upgrade details",
+    "3. Run: node inject-manual-upgrades.js",
+    "4. File will be auto-deleted after injection (archived as .bak)"
+  ],
+  
+  "_field_descriptions": {
+    "plan_name": "REQUIRED - Name of the upgrade (e.g. v1.0.0)",
+    "target_height": "REQUIRED - Block height when upgrade will occur",
+    "proposal_voting_start_time": "OPTIONAL - ISO 8601 timestamp (auto-uses current time if omitted)",
+    "proposal_id": "OPTIONAL - Identifier for tracking (default: 'MANUAL')",
+    "proposal_title": "OPTIONAL - Human readable description (default: same as plan_name)",
+    "status": "OPTIONAL - 'scheduled' or 'completed' (default: 'scheduled')",
+    "avg_block_time": "OPTIONAL - Average block time in seconds for ETA calculation (default: 6)"
+  },
+
+  "_examples": {
+    "minimal": {
+      "chain-name": [
+        {
+          "plan_name": "v1.0.0",
+          "target_height": 1234567
+        }
+      ]
+    },
+    
+    "with_custom_block_time": {
+      "chain-name": [
+        {
+          "plan_name": "v1.0.0",
+          "target_height": 1234567,
+          "avg_block_time": 30
+        }
+      ]
+    },
+    
+    "with_custom_info": {
+      "chain-name": [
+        {
+          "plan_name": "v1.0.0",
+          "target_height": 1234567,
+          "proposal_id": "MANUAL-001",
+          "proposal_title": "Emergency Security Patch"
+        }
+      ]
+    },
+    
+    "full_without_timestamp": {
+      "chain-name": [
+        {
+          "plan_name": "v1.0.0",
+          "target_height": 1234567,
+          "proposal_id": "MANUAL-2025-01",
+          "proposal_title": "Coordinated Upgrade v1.0.0",
+          "status": "scheduled",
+          "avg_block_time": 30
+        }
+      ]
+    },
+    
+    "full_with_timestamp": {
+      "chain-name": [
+        {
+          "plan_name": "v1.0.0",
+          "target_height": 1234567,
+          "proposal_voting_start_time": "2025-01-20T10:00:00Z",
+          "proposal_id": "MANUAL-2025-01",
+          "proposal_title": "Coordinated Upgrade v1.0.0 - Critical Fix",
+          "status": "scheduled",
+          "avg_block_time": 30
+        }
+      ]
+    },
+    
+    "multiple_chains": {
+      "lava": [
+        {
+          "plan_name": "v0.21.0",
+          "target_height": 890000,
+          "avg_block_time": 30
+        }
+      ],
+      "cosmoshub": [
+        {
+          "plan_name": "v15-emergency",
+          "target_height": 1500000,
+          "proposal_id": "EMERGENCY-001",
+          "proposal_title": "Emergency Security Patch",
+          "avg_block_time": 6
+        }
+      ],
+      "osmosis": [
+        {
+          "plan_name": "v20.0.0",
+          "target_height": 8000000
+        }
+      ]
+    },
+    
+    "multiple_upgrades_same_chain": {
+      "lava": [
+        {
+          "plan_name": "v0.21.0",
+          "target_height": 890000,
+          "proposal_title": "First upgrade - Performance improvements"
+        },
+        {
+          "plan_name": "v0.22.0",
+          "target_height": 950000,
+          "proposal_title": "Second upgrade - New features"
+        }
+      ]
+    }
+  },
+
+  "lava": [
+    {
+      "plan_name": "v0.21.0",
+      "target_height": 890000,
+      "proposal_id": "MANUAL-001",
+      "proposal_title": "Manual Coordinated Upgrade to v0.21.0",
+      "status": "scheduled",
+      "avg_block_time": 30
+    }
+  ]
+}

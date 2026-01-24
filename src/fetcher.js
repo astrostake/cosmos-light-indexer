@@ -7,7 +7,7 @@ export async function fetchAndProcess(db, chainConfig, actionType, processCallba
 
   // 1. Initialization & Checkpoint Loading
   const row = db.prepare('SELECT last_height FROM sync_status WHERE action_type = ?').get(actionType);
-  let lastMaxHeight = row ? row.last_height : 0;
+  let lastMaxHeight = row ? row.last_height : (chainConfig.start_height || 0);
   
   const stmtSaveCheckpoint = db.prepare('INSERT OR REPLACE INTO sync_status (action_type, last_height) VALUES (?, ?)');
 

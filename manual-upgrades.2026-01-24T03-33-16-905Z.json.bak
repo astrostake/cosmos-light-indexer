@@ -1,0 +1,11 @@
+{
+  "lumen": [
+    {
+      "plan_name": "v1.4.0",
+      "target_height": 875000,
+      "proposal_id": "MANUAL-001",
+      "proposal_title": "Coordinated Off-Chain Upgrade — v1.4.0",
+      "status": "scheduled"
+    }
+  ]
+}
