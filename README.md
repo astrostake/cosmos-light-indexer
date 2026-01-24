@@ -62,6 +62,7 @@ chains:
     query_param: "query"                    # Use "query" (Legacy/Default) or "events" (SDK v0.50+)
     db_file: "./data/lumera.db"             # Location of the SQLite file
     genesis_file: "./genesis/lumera.json"   # Optional: For Genesis Import
+    start_height: 5200791                   # Optional: if there is no full block history API
 
   - name: "paxinet"
     api_url: "https://mainnet-lcd.paxinet.io"
