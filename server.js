@@ -343,6 +343,93 @@ app.get('/:chain/upgrade/:planName', (req, res) => {
   }
 });
 
+app.get('/global/upgrades', (req, res) => {
+  try {
+    const dataDir = path.resolve('./data');
+    
+    if (!fs.existsSync(dataDir)) {
+      return res.json({ active: [], history: [] });
+    }
+
+    const files = fs.readdirSync(dataDir).filter(file => file.endsWith('.db'));
+    
+    let allActiveUpgrades = [];
+    let allHistoryUpgrades = [];
+
+    for (const file of files) {
+      const chainName = file.replace('.db', '');
+      const dbPath = path.join(dataDir, file);
+      
+      let db;
+      try {
+        db = new Database(dbPath, { readonly: true });
+
+        // A. Ambil Upgrade Aktif (Upcoming)
+        const active = db.prepare('SELECT * FROM active_upgrade ORDER BY target_height DESC LIMIT 1').get();
+        if (active) {
+          // Cek status sync untuk menentukan apakah upgrade sudah lewat
+          const syncStatus = db.prepare('SELECT MAX(last_height) as h FROM sync_status').get();
+          const currentHeight = syncStatus ? syncStatus.h : 0;
+          
+          if (currentHeight < active.target_height) {
+            allActiveUpgrades.push({
+              chain: chainName,
+              ...active
+            });
+          }
+        }
+
+        // B. Ambil History Upgrade
+        const history = db.prepare(`
+          SELECT 
+            plan_name, target_height, actual_upgrade_time, 
+            proposal_id, proposal_title, status, recorded_at 
+          FROM history_upgrades
+        `).all();
+
+        // Format history dan tambahkan nama chain
+        const formattedHistory = history.map(h => ({
+          chain: chainName,
+          ...h,
+          actual_upgrade_date: h.actual_upgrade_time 
+            ? new Date(h.actual_upgrade_time).toISOString() 
+            : null
+        }));
+
+        allHistoryUpgrades = allHistoryUpgrades.concat(formattedHistory);
+
+      } catch (err) {
+        console.error(`Error reading DB for ${chainName}:`, err.message);
+      } finally {
+        if (db) db.close();
+      }
+    }
+
+    // 3. Sorting (Pengurutan)
+    
+    // Urutkan Active Upgrade berdasarkan estimasi waktu (yang paling dekat paling atas)
+    allActiveUpgrades.sort((a, b) => {
+      return (a.estimated_time || 0) - (b.estimated_time || 0);
+    });
+
+    // Urutkan History berdasarkan waktu upgrade aktual (yang terbaru paling atas)
+    allHistoryUpgrades.sort((a, b) => {
+      const dateA = a.actual_upgrade_time || 0;
+      const dateB = b.actual_upgrade_time || 0;
+      return dateB - dateA;
+    });
+
+    res.json({
+      active: allActiveUpgrades,
+      history: allHistoryUpgrades
+    });
+
+  } catch (e) {
+    console.error("Global upgrade fetch error:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`\n🚀 API Server running at http://localhost:${PORT}`);
 });
