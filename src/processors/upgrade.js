@@ -204,10 +204,51 @@ export const syncUpgradePlan = async (db, chainConfig) => {
       );
     }
 
-    // 6. Find Active Upgrade (for active_upgrade table)
+    // 6. Update Manual Upgrades that have passed
+    const passedManualUpgrades = db.prepare(`
+      SELECT * FROM history_upgrades 
+      WHERE status = 'scheduled' AND target_height <= ?
+      AND (proposal_id LIKE 'MANUAL%' OR proposal_id = 'N/A')
+    `).all(currentHeight);
+    
+    for (const manualUpgrade of passedManualUpgrades) {
+      const targetHeight = parseInt(manualUpgrade.target_height);
+      let actualUpgradeTime = null;
+      
+      // Try to fetch actual block time
+      try {
+        const blockPath = resLatest.config.url
+          .replace(baseUrl, '')
+          .replace('latest', targetHeight);
+        
+        const resTargetBlock = await axios.get(`${baseUrl}${blockPath}`, { timeout: 5000 });
+        actualUpgradeTime = new Date(resTargetBlock.data.block.header.time).getTime();
+      } catch {
+        // Estimate based on average block time if fetch fails
+        if (avgBlockTime) {
+          const blocksPassed = currentHeight - targetHeight;
+          actualUpgradeTime = currentTime - (blocksPassed * avgBlockTime * 1000);
+        }
+      }
+      
+      // Update to completed
+      stmtInsertHistory.run(
+        manualUpgrade.plan_name,
+        targetHeight,
+        actualUpgradeTime,
+        manualUpgrade.proposal_voting_start_time,
+        manualUpgrade.proposal_id,
+        manualUpgrade.proposal_title,
+        'completed'
+      );
+      
+      console.log(`   ✅ Updated manual upgrade: ${manualUpgrade.plan_name} -> completed`);
+    }
+
+    // 7. Find Active Upgrade (for active_upgrade table)
     let found = null;
     
-    // 6a. First, check manual injected upgrades from history_upgrades
+    // 7a. First, check manual injected upgrades from history_upgrades
     const manualUpgrade = db.prepare(`
       SELECT * FROM history_upgrades 
       WHERE status = 'scheduled' AND target_height > ?
@@ -224,7 +265,7 @@ export const syncUpgradePlan = async (db, chainConfig) => {
       };
     }
     
-    // 6b. If no manual upgrade, find from proposals
+    // 7b. If no manual upgrade, find from proposals
     if (!found) {
       // Find upgrades that haven't occurred yet
       const futureUpgrades = allUpgradeProposals.filter(p => {
@@ -243,7 +284,7 @@ export const syncUpgradePlan = async (db, chainConfig) => {
       }
     }
 
-    // 7. Fallback: Check Current Plan Endpoint
+    // 8. Fallback: Check Current Plan Endpoint
     if (!found) {
       try {
         const resPlan = await fetchSmart(baseUrl, PATHS.plans, 5000);
@@ -269,7 +310,7 @@ export const syncUpgradePlan = async (db, chainConfig) => {
       return;
     }
 
-    // 8. Calculate ETA & Save Active Upgrade
+    // 9. Calculate ETA & Save Active Upgrade
     // THIS IS THE KEY: ETA is always recalculated on every sync
     const blocksRemaining = found.height - currentHeight;
     let estimatedTime;
